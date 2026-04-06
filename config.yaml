@@ -1,0 +1,58 @@
+app:
+  env: development
+  log_level: debug
+
+database:
+  host: localhost
+  port: 5432
+  user: dnsproxy
+  password: dev_password_123
+  name: dnsproxy
+  sslmode: disable
+  max_connections: 25
+  max_idle_connections: 5
+  connection_lifetime: 5m
+
+redis:
+  host: localhost
+  port: 6379
+  password: ""
+  db: 0
+  pool_size: 10
+
+dns:
+  port: 53
+  host: 0.0.0.0
+  upstream_servers:
+    - 1.1.1.1:53
+    - 8.8.8.8:53
+  cache_ttl: 300
+  timeout: 5s
+
+proxy:
+  http_port: 8080
+  https_port: 8443
+  host: 0.0.0.0
+  timeout: 30s
+  max_idle_connections: 100
+  idle_connection_timeout: 90s
+
+api:
+  port: 8000
+  host: 0.0.0.0
+  read_timeout: 10s
+  write_timeout: 10s
+  jwt_secret: dev_jwt_secret_key_change_in_production
+  jwt_expiration: 24h
+
+telegram:
+  bot_token: ""
+  admin_ids: []
+  webhook_url: ""
+
+payment:
+  yookassa:
+    shop_id: ""
+    secret_key: ""
+    webhook_secret: ""
+    return_url: ""

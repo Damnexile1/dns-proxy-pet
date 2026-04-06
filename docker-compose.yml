@@ -1,0 +1,130 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: dnsproxy-postgres
+    environment:
+      POSTGRES_USER: dnsproxy
+      POSTGRES_PASSWORD: dev_password_123
+      POSTGRES_DB: dnsproxy
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dnsproxy"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dnsproxy-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: dnsproxy-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - dnsproxy-network
+
+  dns-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dns
+    container_name: dnsproxy-dns
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+    environment:
+      - CONFIG_PATH=/app/config.yaml
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - ./.env:/app/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dnsproxy-network
+    restart: unless-stopped
+
+  proxy-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.proxy
+    container_name: dnsproxy-proxy
+    ports:
+      - "8080:8080"
+      - "8443:8443"
+    environment:
+      - CONFIG_PATH=/app/config.yaml
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - ./.env:/app/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dnsproxy-network
+    restart: unless-stopped
+
+  api-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: dnsproxy-api
+    ports:
+      - "8000:8000"
+    environment:
+      - CONFIG_PATH=/app/config.yaml
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - ./.env:/app/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - dnsproxy-network
+    restart: unless-stopped
+
+  telegram-bot:
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    container_name: dnsproxy-bot
+    environment:
+      - CONFIG_PATH=/app/config.yaml
+    volumes:
+      - ./config.yaml:/app/config.yaml
+      - ./.env:/app/.env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      api-server:
+        condition: service_started
+    networks:
+      - dnsproxy-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  dnsproxy-network:
+    driver: bridge
