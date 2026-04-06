@@ -41,37 +41,64 @@
 
 ## Быстрый старт
 
-### 1. Клонировать репозиторий
+### Вариант 1: Использование Makefile (рекомендуется)
+
+```bash
+# Показать все доступные команды
+make help
+
+# Полная настройка проекта (установка зависимостей, запуск инфраструктуры, миграции)
+make setup
+
+# Или пошагово:
+# 1. Запустить PostgreSQL и Redis
+make up-infra
+
+# 2. Применить миграции
+make migrate-up
+
+# 3. Заполнить тестовыми данными (опционально)
+make db-seed
+
+# 4. Запустить все сервисы в Docker
+make up
+
+# Посмотреть логи
+make logs
+
+# Посмотреть статус контейнеров
+make ps
+```
+
+### Вариант 2: Ручная настройка
+
+#### 1. Клонировать репозиторий
 
 ```bash
 git clone <repo-url>
 cd dns-proxy-pet
 ```
 
-### 2. Настроить переменные окружения
+#### 2. Настроить переменные окружения
 
 ```bash
 cp .env.example .env
 # Отредактировать .env файл
 ```
 
-### 3. Запустить PostgreSQL и Redis
+#### 3. Запустить PostgreSQL и Redis
 
 ```bash
 docker compose up -d postgres redis
 ```
 
-### 4. Применить миграции
+#### 4. Применить миграции
 
 ```bash
-# Установить golang-migrate
-go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
-
-# Применить миграции
-migrate -path migrations -database "postgresql://dnsproxy:dev_password_123@localhost:5432/dnsproxy?sslmode=disable" up
+./scripts/migrate.sh
 ```
 
-### 5. Запустить сервисы
+#### 5. Запустить сервисы локально
 
 ```bash
 # DNS сервер
@@ -89,22 +116,97 @@ go run cmd/telegram-bot/main.go
 
 ## Разработка
 
+### Makefile команды
+
+Проект использует Makefile для упрощения разработки. Основные команды:
+
+#### Управление инфраструктурой
+```bash
+make up-infra          # Запустить PostgreSQL и Redis
+make down              # Остановить все сервисы
+make restart-infra     # Перезапустить инфраструктуру
+make ps                # Показать статус контейнеров
+make logs              # Показать логи всех сервисов
+make logs-db           # Показать логи PostgreSQL
+make logs-redis        # Показать логи Redis
+```
+
+#### Управление базой данных
+```bash
+make migrate-up        # Применить все миграции
+make migrate-down      # Откатить последнюю миграцию
+make migrate-reset     # Сбросить БД и применить миграции заново
+make db-tables         # Показать все таблицы
+make db-shell          # Открыть PostgreSQL shell
+make db-seed           # Заполнить БД тестовыми данными
+make db-clean          # Удалить все таблицы
+```
+
+#### Redis
+```bash
+make redis-shell       # Открыть Redis CLI
+make redis-flush       # Очистить все данные Redis
+```
+
+#### Разработка
+```bash
+make run-dns           # Запустить DNS сервер локально
+make run-proxy         # Запустить Proxy сервер локально
+make run-api           # Запустить API сервер локально
+make run-bot           # Запустить Telegram бот локально
+```
+
+#### Сборка
+```bash
+make build-all         # Собрать все бинарники
+make build-dns         # Собрать DNS сервер
+make build-proxy       # Собрать Proxy сервер
+make build-api         # Собрать API сервер
+make build-bot         # Собрать Telegram бот
+```
+
+#### Тестирование
+```bash
+make test              # Запустить все тесты
+make test-coverage     # Запустить тесты с coverage
+make lint              # Запустить линтер
+make fmt               # Форматировать код
+make vet               # Запустить go vet
+```
+
+#### Очистка
+```bash
+make clean             # Удалить контейнеры, volumes, бинарники
+make clean-cache       # Очистить Go кеш
+```
+
+#### Информация
+```bash
+make help              # Показать все команды
+make info              # Показать информацию о проекте
+```
+
 ### Установка зависимостей
 
 ```bash
+make tidy
+# или
 go mod download
 ```
 
 ### Запуск тестов
 
 ```bash
+make test
+# или
 go test ./...
 ```
 
 ### Сборка
 
 ```bash
-# Собрать все сервисы
+make build-all
+# или вручную
 go build -o bin/dns-server ./cmd/dns-server
 go build -o bin/proxy-server ./cmd/proxy-server
 go build -o bin/api-server ./cmd/api-server
@@ -115,9 +217,13 @@ go build -o bin/telegram-bot ./cmd/telegram-bot
 
 ```bash
 # Собрать все образы
+make build
+# или
 docker compose build
 
 # Запустить все сервисы
+make up
+# или
 docker compose up -d
 
 # Посмотреть логи
@@ -203,3 +309,13 @@ migrate create -ext sql -dir migrations -seq <migration_name>
 ## Лицензия
 
 Proprietary
+
+### Полезные make команды
+
+- make setup          # Полная автоматическая настройка
+- make up-infra       # Запуск PostgreSQL + Redis
+- make migrate-up     # Применить миграции
+- make db-seed        # Тестовые данные
+- make db-clean       # Очистить БД
+- make ps             # Статус контейнеров
+- make help           # Все команды

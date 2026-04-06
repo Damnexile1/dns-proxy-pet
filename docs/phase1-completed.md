@@ -58,24 +58,60 @@
 - ✅ Создан .gitignore
 - ✅ Создан README.md с полной документацией
 - ✅ Реализован pkg/logger с использованием zap
+- ✅ Создан Makefile с удобными командами для разработки
+- ✅ Создан scripts/seed.sql с тестовыми данными
+- ✅ Настроены порты для доступа к PostgreSQL (5432) и Redis (6379) извне
+- ✅ Убрано предупреждение о версии в docker-compose.yml
+
+### 7. Makefile команды
+Созданы удобные команды для управления проектом:
+- **Инфраструктура:** `make up-infra`, `make down`, `make restart-infra`, `make ps`, `make logs`
+- **База данных:** `make migrate-up`, `make migrate-down`, `make migrate-reset`, `make db-tables`, `make db-shell`, `make db-seed`, `make db-clean`
+- **Redis:** `make redis-shell`, `make redis-flush`
+- **Разработка:** `make run-dns`, `make run-proxy`, `make run-api`, `make run-bot`
+- **Сборка:** `make build-all`, `make build-dns`, `make build-proxy`, `make build-api`, `make build-bot`
+- **Тестирование:** `make test`, `make test-coverage`, `make lint`, `make fmt`, `make vet`
+- **Очистка:** `make clean`, `make clean-cache`
+- **Информация:** `make help`, `make info`
+- **Быстрая настройка:** `make setup` (устанавливает зависимости, запускает инфраструктуру, применяет миграции)
 
 ## Проверка
 
 ```bash
+# Показать все команды
+make help
+
+# Показать информацию о проекте
+make info
+
 # Проверить запущенные контейнеры
-docker compose ps
+make ps
 
 # Проверить таблицы в БД
-docker compose exec postgres psql -U dnsproxy -d dnsproxy -c "\dt"
+make db-tables
+
+# Заполнить БД тестовыми данными
+make db-seed
 
 # Результат: 6 таблиц созданы успешно
-# - users
-# - subscriptions
-# - proxy_credentials
-# - payments
-# - traffic_usage
-# - blocked_domains
+# - users (3 тестовых пользователя)
+# - subscriptions (3 подписки)
+# - proxy_credentials (3 набора credentials)
+# - payments (3 платежа)
+# - traffic_usage (3 записи)
+# - blocked_domains (10 доменов)
 ```
+
+## Тестирование Makefile
+
+Все команды протестированы и работают корректно:
+- ✅ `make up-infra` - запускает PostgreSQL и Redis
+- ✅ `make migrate-up` - применяет все миграции
+- ✅ `make db-seed` - заполняет БД тестовыми данными
+- ✅ `make db-clean` - удаляет все таблицы
+- ✅ `make db-tables` - показывает список таблиц
+- ✅ `make ps` - показывает статус контейнеров
+- ✅ `make info` - показывает информацию о проекте
 
 ## Следующие шаги
 
