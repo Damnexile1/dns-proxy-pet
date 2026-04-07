@@ -36,7 +36,7 @@ services:
   dns-server:
     build:
       context: .
-      dockerfile: Dockerfile.dns
+      dockerfile: docker/Dockerfile.dns
     container_name: dnsproxy-dns
     ports:
       - "53:53/udp"
@@ -58,7 +58,7 @@ services:
   proxy-server:
     build:
       context: .
-      dockerfile: Dockerfile.proxy
+      dockerfile: docker/Dockerfile.proxy
     container_name: dnsproxy-proxy
     ports:
       - "8080:8080"
@@ -80,7 +80,7 @@ services:
   api-server:
     build:
       context: .
-      dockerfile: Dockerfile.api
+      dockerfile: docker/Dockerfile.api
     container_name: dnsproxy-api
     ports:
       - "8000:8000"
@@ -101,7 +101,7 @@ services:
   telegram-bot:
     build:
       context: .
-      dockerfile: Dockerfile.bot
+      dockerfile: docker/Dockerfile.bot
     container_name: dnsproxy-bot
     environment:
       - CONFIG_PATH=/app/config.yaml

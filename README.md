@@ -13,17 +13,25 @@
 │   └── telegram-bot/      # Telegram бот
 ├── internal/              # Внутренняя бизнес-логика
 │   ├── config/           # Конфигурация
-│   ├── database/         # Подключение к БД
+│   ├── database/         # Database интерфейс + PgxAdapter
 │   ├── models/           # Модели данных
-│   ├── repository/       # Слой работы с БД
+│   ├── repository/       # Слой работы с БД (используют интерфейсы)
 │   ├── service/          # Бизнес-логика
 │   ├── handler/          # HTTP handlers
 │   ├── middleware/       # Middleware
 │   └── utils/            # Утилиты
 ├── pkg/                   # Публичные пакеты
-│   ├── logger/           # Логирование
-│   ├── cache/            # Кеширование
+│   ├── logger/           # Logger интерфейс + ZapAdapter
+│   ├── cache/            # Cache интерфейс + RedisAdapter
 │   └── auth/             # Аутентификация
+├── docker/                # Docker файлы
+│   ├── Dockerfile.dns
+│   ├── Dockerfile.proxy
+│   ├── Dockerfile.api
+│   └── Dockerfile.bot
+├── tests/                 # Тесты
+│   └── unit/
+│       └── models/       # Unit-тесты моделей
 ├── migrations/            # SQL миграции
 ├── scripts/              # Скрипты
 ├── docs/                 # Документация
@@ -31,6 +39,21 @@
 ├── .env                  # Переменные окружения
 └── docker-compose.yml    # Docker Compose
 ```
+
+## Архитектурные принципы
+
+Проект использует **Adapter Pattern** для изоляции от внешних библиотек:
+
+- **Database Adapter** - абстракция над pgx, легко заменить на другую БД
+- **Cache Adapter** - абстракция над Redis, легко заменить на Memcached/DragonflyDB
+- **Logger Adapter** - абстракция над Zap, легко заменить на logrus/zerolog
+
+Это обеспечивает:
+- ✅ Слабую связанность (loose coupling)
+- ✅ Легкое тестирование с mock'ами
+- ✅ Простую замену реализаций
+
+Подробнее: [docs/REFACTORING_REPORT.md](docs/REFACTORING_REPORT.md)
 
 ## Требования
 
